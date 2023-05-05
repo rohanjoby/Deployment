@@ -6,7 +6,7 @@ const apikey = '27169cc5e1a249c8980b9431f3ff70ad';
 const sources = ['bbc-news','abc-news','cnn','al-jazeera-english',
 'ars-technica','ary-news','associated-press','axios',
 'bloomberg','business-insider','espn','entertainment-weekly'];
-const uri = "mongodb+srv://puthethu:NqzjnxD7Zb8GIp63@cluster0.p27ikdg.mongodb.net/?retryWrites=true&w=majority";
+const uri = 'mongodb://localhost:27017';
 const dbName = 'news';
 
 const app = express();
