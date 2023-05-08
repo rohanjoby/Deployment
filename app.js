@@ -6,18 +6,18 @@ const apikey = '27169cc5e1a249c8980b9431f3ff70ad';
 const sources = ['bbc-news','abc-news','cnn','al-jazeera-english',
 'ars-technica','ary-news','associated-press','axios',
 'bloomberg','business-insider','espn','entertainment-weekly'];
-const uri = 'mongodb://localhost:27017';
+const uri = "mongodb://localhost:27017";
 const dbName = 'news';
 
 const app = express();
 
 const apikey1 = 'c4423886d381833f33956fcc40ca47f0';
 
-async function fetchNews(config) {
-  const url = `https://gnews.io/api/v4/top-headlines?category=${config.category}&lang=${config.lang}&country=${config.country}&max=${config.max}&apikey=${apikey1}`;
+async function fetchNewsArticles(config) {
+  const url=`https://gnews.io/api/v4/top-headlines?category=${config.category}&lang=${config.lang}&country=${config.country}&max=${config.max}&apikey=${apikey1}`;
   const response = await axios.get(url);
   let articles=response.data.articles;
-  let documents = [];
+  let documents=[];
   for (let art of articles) {
     documents.push({
       'title': art.title,
@@ -32,17 +32,17 @@ async function fetchNews(config) {
   return documents
 }
 
-async function getConfiguration(email) {
-  const client = await MongoClient.connect(uri, { useNewUrlParser: true, useUnifiedTopology: true });
-  const db = client.db(dbName);
-  const collection = db.collection('config');
-  const config = await collection.findOne({ email });
+async function getConfiguration(email){
+  const client=await MongoClient.connect(uri,{useNewUrlParser: true, useUnifiedTopology: true});
+  const db=client.db(dbName);
+  const collection=db.collection('config');
+  const config=await collection.findOne({email});
   await client.close();
   return config;
 }
 
-app.get('/api/gnews', async (req, res) => {
-  const email = req.query.email;
+app.get('/api/gnews', async (req, res)=>{
+  const email=req.query.email;
   console.log(email)
   if (!email) {
     res.status(400).json({ status: 'error', message: 'Email is required' });
@@ -57,7 +57,7 @@ app.get('/api/gnews', async (req, res) => {
       return;
     }
 
-    const articles = await fetchNews(config);
+    const articles = await fetchNewsArticles(config);
     console.log(articles)
     res.json(articles);
   } catch (err) {
@@ -66,7 +66,6 @@ app.get('/api/gnews', async (req, res) => {
   }
 });
 
-// Function to fetch and store news articles
 async function fetchAndStoreNews() {
   try{
     const client= await MongoClient.connect(uri, { useNewUrlParser: true, useUnifiedTopology: true });
@@ -98,11 +97,7 @@ async function fetchAndStoreNews() {
         console.error(err);
       }
     }
-
-    // Fetch articles every 5 minutes (300000 ms)
-    //setInterval(fetchAndStoreNews, 300000);
-
-    // Define the API endpoint to retrieve news articles data
+  setInterval(fetchAndStoreNews, 300000);
   app.get('/api/newsx', (req, res) => {
   MongoClient.connect(uri, { useNewUrlParser: true, useUnifiedTopology: true })
     .then(client => {
@@ -113,38 +108,29 @@ async function fetchAndStoreNews() {
           res.json(data);
           client.close();
         })
-        .catch((err) => console.error(err));
+        .catch((err)=>console.error(err));
     })
-    .catch((err) => console.error(err));
+    .catch((err)=>console.error(err));
 });
 app.use(express.urlencoded({ extended: true })); 
 app.use(express.json()); 
-app.use(bodyParser.json()); // for parsing application/json
+app.use(bodyParser.json()); 
 app.use(bodyParser.urlencoded({ extended: true }));
-// Define the route for the login API
 app.post('/api/login', (req, res) => {
-  // Extract the email and password from the request body
   const { email, password } = req.body;
   console.log(email)
   console.log(password)
-
-  // Connect to the MongoDB database
   MongoClient.connect('mongodb://localhost:27017', { useNewUrlParser: true, useUnifiedTopology: true })
     .then(client => {
-      // Select the users collection from the database
       const db = client.db('users');
       const collection = db.collection('users');
-
-      // Find the user with the specified email and password
       return collection.findOne({ email, password });
     })
     .then(user => {
       if (user) {
-        // If the authentication is successful, return a JWT token
         const token = 'someJWTtoken';
         res.json({ token });
       } else {
-        // If the authentication fails, return an error message
         res.status(401).json({ error: 'Invalid credentials' });
       }
     })
@@ -153,19 +139,15 @@ app.post('/api/login', (req, res) => {
       res.status(500).json({ error: err.message });
     });
 });
-app.post('/api/register', (req, res) => {
-    // Extract the user information from the request body
-    const { firstName, lastName, email, password } = req.body;
-    console.log(firstName)
-    // Connect to the MongoDB database
+app.post('/api/register',(req, res)=>{
+    const { firstName,lastName,email,password } = req.body;
+    console.log(email)
+    console.log(password)
     MongoClient.connect('mongodb://localhost:27017', { useNewUrlParser: true, useUnifiedTopology: true })
       .then(client => {
-        // Select the users collection from the database
         const db = client.db('users');
         const collection = db.collection('users');
-  
-        // Insert the user document into the database
-        const user = { firstName, lastName, email, password };
+        const user = { firstName,lastName,email,password };
         return collection.insertOne(user);
       })
       .then(result => {
@@ -356,6 +338,5 @@ app.post('/api/register', (req, res) => {
   });
   app.listen(3000, () => {
     console.log('Server started on port 3020');
-    // Fetch articles when the server starts
     fetchAndStoreNews();
   });
